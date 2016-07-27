@@ -7,6 +7,8 @@ import (
 		"github.com/gorilla/mux"
 		"database/sql"
 		_ "github.com/lib/pq"
+		"github.com/BurntSushi/toml"
+		"os"
 		)
 
 type Book struct {
@@ -30,9 +32,36 @@ func checkErr(err error) {
 
 var db *sql.DB
 
+type ConfigDB struct {
+    DB_USER string
+    DB_PASSWORD string
+    DB_NAME string
+}
+
+
+// Reads db info from config file
+func ReadConfigDB() ConfigDB {
+	var configfile = ".bookshelfrc"
+	_, err := os.Stat(configfile)
+	if err != nil {
+		log.Fatal("Config file is missing: ", configfile)
+	}
+
+	var config ConfigDB
+	if _, err := toml.DecodeFile(configfile, &config); err != nil {
+		log.Fatal(err)
+	}
+	return config
+}
+
+
 func main() {
+
+    var configDB = ReadConfigDB()
+    //fmt.Print(configDB.DB_NAME)
+
     dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable",
-        DB_USER, DB_PASSWORD, DB_NAME)
+        configDB.DB_USER, configDB.DB_PASSWORD, configDB.DB_NAME)
     db, err := sql.Open("postgres", dbinfo)
     checkErr(err)
     defer db.Close()
