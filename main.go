@@ -27,9 +27,6 @@ func checkErr(err error) {
     }
 }
 
-var DB_USER = "bookuser"
-var DB_PASSWORD = "bookpass"
-var DB_NAME = "bookshelf"
 
 var db *sql.DB
 
