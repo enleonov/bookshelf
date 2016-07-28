@@ -41,7 +41,7 @@
 						<td>{{.Name}}</td>
 				                <td>{{.Author}}</td>
 			        	        <td>{{.Library}}</td>
-						<td><a id="a_book{{.Id}}" class="deletebook" src="#">удалить</a></td>
+						<td><a id='a_book{{.Id}}' class='deletebook' src='#'>удалить</a></td>
 				        </tr>
 					{{end}}
 				</tbody>
@@ -91,16 +91,18 @@
 		
 	  var posting = $.post( url, JSON.stringify( {"Name": bookname, "Author": bookauthor, "LibraryId": library}),
 		  function( data ) {
-			$("#booktable").find('tbody').append("<tr><td>"+data['Id']+"</td><td>"+data['Name']+"</td><td>"+data['Author']+"</td><td>"+data['Library']+"</td><td id='td_book'"+data['Id']+"><a id='a_book'"+data['Id']+" src='#'>удалить</a></td></td></tr>");
+			$("#booktable").find('tbody').append("<tr id='tr_book"+data['Id']+"'><td>"+data['Id']+"</td><td>"+data['Name']+"</td><td>"+data['Author']+"</td><td>"+data['Library']+"</td><td><a id='a_book"+data['Id']+"' class='deletebook' src='#'>удалить</a></td></td></tr>");
+
+        	   	 $form.find( "input[name='bookname']" ).val('');
+		         $form.find( "input[name='bookauthor']" ).val('');
+
 	  }, 
 	  'json'
 	  );
 	});
 
-
-	$("a.deletebook" ).click(function(event) {
+	$(document).on('click', 'a.deletebook', function(event) {
 		var id=event.target.id.substring(6);
-
 		$.ajax({
 			url: '/book/'+id,
 			type: 'DELETE',
@@ -109,12 +111,6 @@
 			}
 		});
 
-/*
-		$.post( '/book/'+id, JSON.stringify( {"id": id}),function( data ) {
-                        $("#booktable").find('tbody').append("<td id='td_book'"+id);
-          }, 
-          'json'
-          );	  */
 	});
 
     </script>

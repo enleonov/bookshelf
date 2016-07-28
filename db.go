@@ -12,8 +12,8 @@ func insert(name, author string, library int) (int, error) {
                 return -1, err
         }
         var row *sql.Rows
-        row, err = db.Query("INSERT INTO book (id, name, author, library_id) 
-		VALUES ( default, $1, $2, $3) RETURNING id", name, author, library)
+        row, err = db.Query("INSERT INTO book (id, name, author, library_id) "+
+		"VALUES ( default, $1, $2, $3) RETURNING id", name, author, library)
         if err != nil {
                 return -1, err
         }
@@ -56,14 +56,14 @@ func readBooks(str string) ([]Book, error) {
 	}
 	var rows *sql.Rows
 	if str != "" {
-		rows, err = db.Query("SELECT book.id, book.name, book.author, library.id, 
-			library.name FROM book, library WHERE name LIKE $1 
-			and book.library_id = library.id ORDER BY book.id",
+		rows, err = db.Query("SELECT book.id, book.name, book.author, library.id, library.name "+
+			"FROM book, library WHERE name LIKE $1 and "+
+			"book.library_id = library.id ORDER BY book.id",
 			"%"+str+"%")
 	} else {
-		rows, err = db.Query("SELECT book.id, book.name, book.author, library.id, 
-			library.name FROM book, library WHERE book.library_id = library.id 
-			ORDER BY book.id")
+		rows, err = db.Query("SELECT book.id, book.name, book.author, library.id, library.name "+
+			"FROM book, library WHERE book.library_id = library.id "+
+			"ORDER BY book.id")
 	}
 	if err != nil {
 		return nil, err
@@ -115,9 +115,8 @@ func getBookById(id int) (Book, error) {
 	var book Book
 	var row *sql.Rows
         var err error
-	row, err = db.Query("SELECT book.id, book.name, book.author, library.id, 
-		library.name FROM book, library WHERE book.library_id = library.id 
-		and book.id = $1", id)
+	row, err = db.Query("SELECT book.id, book.name, book.author, library.id, library.name "+
+		"FROM book, library WHERE book.library_id = library.id and book.id = $1", id)
 	if err != nil {
 		return book, err
 	}
