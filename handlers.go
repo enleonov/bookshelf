@@ -1,35 +1,28 @@
 package main
 
 import (
-		"fmt"
 		"net/http"
-		"github.com/gorilla/mux"
 		"html/template"
 		"encoding/json"
-		)
+		"log"
+		"github.com/gorilla/mux"
+		"strconv"
+)
 
 
 
-
-func Index(w http.ResponseWriter, r *http.Request) {
-
-	recs, err := readBooks("")
+func index(w http.ResponseWriter, r *http.Request) {
+	books, err := readBooks("")
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
+	libraries, err := readLibraries()
 
-//	if err = json.NewEncoder(w).Encode(recs); err != nil {
-//		w.WriteHeader(500)
-//	}
-
-
-	title := "FFFFF"// r.URL.Path[lenPath:]
-	p := &Page{Title: title, Books: recs}
+	title := "bookshelf"
+	p := &Page{Title: title, Books: books, Libraries: libraries}
 	renderTemplate(w, "index", p)
-	//fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
@@ -38,30 +31,58 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 }
 
 
-func CreateBook(w http.ResponseWriter, r *http.Request) {
-	var rec Book
-	err := json.NewDecoder(r.Body).Decode(&rec)
-	if err != nil || rec.Name == "" || rec.Author == "" {
+func deleteBook(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+        if err != nil || id <= 0{
+                log.Println(err.Error())
+                w.WriteHeader(404)
+                return
+        }
+
+	var res int
+        if res, err = deleteBookById(id); err != nil {
+                log.Println(err.Error())
+                w.WriteHeader(500)
+                return
+        }
+	if res <= 0 {
+		w.WriteHeader(500)
+		log.Println("Failed delete book")
+		return
+	}
+	w.WriteHeader(204)
+
+}
+
+func createBook(w http.ResponseWriter, r *http.Request) {
+	var book Book
+
+	err := json.NewDecoder(r.Body).Decode(&book)
+	if err != nil || book.Name == "" || book.Author == "" {
+		log.Println(err.Error())
 		w.WriteHeader(400)
 		return
 	}
-	if _, err := insert(rec.Name, rec.Author, rec.LibraryId); err != nil {
+
+	var id int
+	if id, err = insert(book.Name, book.Author, book.LibraryId); err != nil {
+		log.Println(err.Error())
 		w.WriteHeader(500)
 		return
 	}
+
+	var newBook Book
+	newBook, err = getBookById(id)
+	log.Println("ID", newBook.Id)
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+        if err = json.NewEncoder(w).Encode(newBook); err != nil {
+              w.WriteHeader(500)
+		return
+        }
+
 	w.WriteHeader(201)
-}
-
-
-
-func TodoIndex(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintln(w, "Todo Index!")
-}
-
-func TodoShow(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	todoId := vars["todoId"]
-	fmt.Fprintln(w, "Todo show:", todoId)
 }
 
 

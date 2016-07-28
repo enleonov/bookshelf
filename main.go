@@ -16,11 +16,18 @@ type Book struct {
 	Name string
 	Author string
 	LibraryId int
+	Library string
+}
+
+type Library struct {
+	Id int
+	Name string
 }
 
 type Page struct {
 	Title	string
 	Books []Book
+	Libraries []Library
 }
 
 func checkErr(err error) {
@@ -60,9 +67,10 @@ func main() {
     var configDB = ReadConfigDB()
     //fmt.Print(configDB.DB_NAME)
 
+    var err error
     dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable",
         configDB.DB_USER, configDB.DB_PASSWORD, configDB.DB_NAME)
-    db, err := sql.Open("postgres", dbinfo)
+    db, err = sql.Open("postgres", dbinfo)
     checkErr(err)
     defer db.Close()
 
@@ -76,25 +84,12 @@ func main() {
       `"name" varchar(100), "author" varchar(100), "library_id" integer NOT NULL REFERENCES public.library(id))`)
     checkErr(err)
 
-/*
-    _, err = db.Exec("CREATE TABLE IF NOT EXISTS " +
-      `library_book("id" SERIAL PRIMARY KEY,` +
-      `"library_id" integer NOT NULL REFERENCES library(id), "book_id" integer NOT NULL REFERENCES public.book(id))`)
-    checkErr(err)
-*/
-
     router := mux.NewRouter().StrictSlash(true)
-    //router.Methods("GET", "POST").HandleFunc("/products/{key}", ProductHandler)
-    router.HandleFunc("/", Index).Methods("GET")
-    router.HandleFunc("/books", CreateBook).Methods("POST")
-    //router.GET("/books/:id", getBook)
-    //router.PUT("/books/:id", updateBook)
-    //router.DELETE("/books/:id", deleteBook)
-    //router.GET("/api/v1/records", getRecords)
-
-    router.HandleFunc("/todos", TodoIndex)
-    router.HandleFunc("/todos/{todoId}", TodoShow)
-
+    router.HandleFunc("/", index).Methods("GET")
+    router.HandleFunc("/book", createBook).Methods("POST")
+    //router.GET("/book/:id", getBook)
+    //router.PUT("/book/:id", updateBook)
+    router.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 
     log.Fatal(http.ListenAndServe(":9013", router))
 

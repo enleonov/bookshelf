@@ -1,131 +1,123 @@
-<div class="container-fluid">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Bootstrap 3, from LayoutIt!</title>
+
+    <meta name="description" content="Source code generated using layoutit.com">
+    <meta name="author" content="LayoutIt!">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
-			<div class="jumbotron">
-				<h2>
-					Hello, {{.Title}}!
-				</h2>
-				<p>
-					This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of c.
-				</p>
-				<p>
-					<a class="btn btn-primary btn-large" href="#">Learn more</a>
-				</p>
-			</div>
-			<div class="btn-group">
-				 
-				<button class="btn btn-default" type="button">
-					<em class="glyphicon glyphicon-align-left"></em> Left
-				</button> 
-				<button class="btn btn-default" type="button">
-					<em class="glyphicon glyphicon-align-center"></em> Center
-				</button> 
-				<button class="btn btn-default" type="button">
-					<em class="glyphicon glyphicon-align-right"></em> Right
-				</button> 
-				<button class="btn btn-default" type="button">
-					<em class="glyphicon glyphicon-align-justify"></em> Justify
-				</button>
-			</div>
-				
 
 
-{{range .Books}}
-    <li><a href="{{.}}">"__"</a></li>
-{{end}}
+			 </br>
+                        <label>СПИСОК КНИГ В БИБЛИОТЕКАХ</label>
 
-
-
-			<table class="table">
+			<table class="table" id="booktable">
 				<thead>
 					<tr>
-						<th>
-							#
-						</th>
-						<th>
-							Название книги
-						</th>
-						<th>
-							Payment Taken
-						</th>
-						<th>
-							Status
-						</th>
+						<th>#</th>
+						<th>Название книги</th>
+						<th>Автор</th>
+						<th>Библиотека</th>
+						<th>удалить</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>
-							1
-						</td>
-						<td>
-							TB - Monthly
-						</td>
-						<td>
-							01/04/2012
-						</td>
-						<td>
-							Default
-						</td>
-					</tr>
-					<tr class="active">
-						<td>
-							1
-						</td>
-						<td>
-							TB - Monthly
-						</td>
-						<td>
-							01/04/2012
-						</td>
-						<td>
-							Approved
-						</td>
-					</tr>
-					<tr class="success">
-						<td>
-							2
-						</td>
-						<td>
-							TB - Monthly
-						</td>
-						<td>
-							02/04/2012
-						</td>
-						<td>
-							Declined
-						</td>
-					</tr>
-					<tr class="warning">
-						<td>
-							3
-						</td>
-						<td>
-							TB - Monthly
-						</td>
-						<td>
-							03/04/2012
-						</td>
-						<td>
-							Pending
-						</td>
-					</tr>
-					<tr class="danger">
-						<td>
-							4
-						</td>
-						<td>
-							TB - Monthly
-						</td>
-						<td>
-							04/04/2012
-						</td>
-						<td>
-							Call in to confirm
-						</td>
-					</tr>
+					{{range .Books}}
+				        <tr id='tr_book{{.Id}}'>
+				                <td>{{.Id}}</td>
+						<td>{{.Name}}</td>
+				                <td>{{.Author}}</td>
+			        	        <td>{{.Library}}</td>
+						<td><a id="a_book{{.Id}}" class="deletebook" src="#">удалить</a></td>
+				        </tr>
+					{{end}}
 				</tbody>
 			</table>
+
+			</br>
+			<label>ДОБАВЛЕНИЕ НОВОЙ КНИГИ</label>
+			<form action="/book" id="newBookForm">
+			  <div class="form-group">
+			     <label for="exampleInput">Название книги</label>
+			     <input type="bookname" name="bookname" class="form-control" id="bookName">
+			  </div>
+			  <div class="form-group">
+			     <label for="exampleInput">Автор</label>
+			     <input  name="bookauthor" class="form-control">
+			  </div>
+	
+                          <div class="form-group">
+                             <label for="exampleInput">Библиотека</label>
+                          	<select name="library" class="form-control">
+	                               {{range .Libraries}}
+	                                 <option value={{.Id}}>{{.Name}}</option>
+	                               {{end}}
+        	                  </select>	
+                          </div>
+	
+			  <button type="submit" class="btn btn-default">Добавить книгу</button>
+			</form>
+		
 		</div>
 	</div>
-</div>
+    </div>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/scripts.js"></script>
+
+
+    <script>
+	$( "#newBookForm" ).submit(function( event ) {
+	  event.preventDefault();
+	  var $form = $( this ),
+	    bookname = $form.find( "input[name='bookname']" ).val(),
+	    bookauthor = $form.find( "input[name='bookauthor']" ).val(),
+	    library = parseInt($form.find("select[name='library']").val()),
+	    url = $form.attr( "action" );
+		
+	  var posting = $.post( url, JSON.stringify( {"Name": bookname, "Author": bookauthor, "LibraryId": library}),
+		  function( data ) {
+			$("#booktable").find('tbody').append("<tr><td>"+data['Id']+"</td><td>"+data['Name']+"</td><td>"+data['Author']+"</td><td>"+data['Library']+"</td><td id='td_book'"+data['Id']+"><a id='a_book'"+data['Id']+" src='#'>удалить</a></td></td></tr>");
+	  }, 
+	  'json'
+	  );
+	});
+
+
+	$("a.deletebook" ).click(function(event) {
+		var id=event.target.id.substring(6);
+
+		$.ajax({
+			url: '/book/'+id,
+			type: 'DELETE',
+			success: function(result) {
+	        		$("#tr_book"+id).remove();
+			}
+		});
+
+/*
+		$.post( '/book/'+id, JSON.stringify( {"id": id}),function( data ) {
+                        $("#booktable").find('tbody').append("<td id='td_book'"+id);
+          }, 
+          'json'
+          );	  */
+	});
+
+    </script>
+
+  </body>
+</html>
